@@ -633,6 +633,30 @@
     font-size: 0.95rem;
   }
 
+  /* TIPO CHIP */
+  .tipo-chip {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.35rem 0.8rem;
+    border: 1px solid var(--cream-dark);
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    background: white;
+    color: var(--text);
+    transition: all 0.15s;
+    user-select: none;
+  }
+  .tipo-chip:hover { border-color: var(--amber-light); background: var(--amber-pale); }
+  .tipo-chip input[type="checkbox"] { display: none; }
+  .tipo-chip:has(input:checked) {
+    background: var(--amber);
+    border-color: var(--amber);
+    color: var(--dark);
+    font-weight: 600;
+  }
+
   /* Scrollbar */
   ::-webkit-scrollbar { width: 6px; }
   ::-webkit-scrollbar-track { background: var(--cream); }
@@ -974,15 +998,15 @@
           <select id="logArnia"><option value="tutte">Tutte le arnie</option></select>
         </div>
         <div class="form-row">
-          <label>Tipo di intervento</label>
-          <select id="logTipo">
-            <option value="ispezione">🔍 Ispezione</option>
-            <option value="trattamento">💊 Trattamento antivarroa</option>
-            <option value="nutrizione">🍬 Nutrizione</option>
-            <option value="produzione">🍯 Raccolta / Smielatura</option>
-            <option value="salute">⚕️ Problema sanitario</option>
-            <option value="altro">📌 Altro</option>
-          </select>
+          <label>Tipo di intervento <span style="font-weight:300;font-style:italic;text-transform:none">(anche più di uno)</span></label>
+          <div id="logTipo" style="display:flex;flex-wrap:wrap;gap:0.5rem;padding:0.3rem 0">
+            <label class="tipo-chip"><input type="checkbox" value="ispezione"> 🔍 Ispezione</label>
+            <label class="tipo-chip"><input type="checkbox" value="trattamento"> 💊 Trattamento</label>
+            <label class="tipo-chip"><input type="checkbox" value="nutrizione"> 🍬 Nutrizione</label>
+            <label class="tipo-chip"><input type="checkbox" value="produzione"> 🍯 Raccolta</label>
+            <label class="tipo-chip"><input type="checkbox" value="salute"> ⚕️ Salute</label>
+            <label class="tipo-chip"><input type="checkbox" value="altro"> 📌 Altro</label>
+          </div>
         </div>
         <div class="form-row">
           <label>Note / Osservazioni</label>
@@ -1236,7 +1260,7 @@ function renderModalMelari() {
   }
   const statusLabel = {posizionato:'In produzione', rimosso:'Rimosso', produzione:'Smielato'};
   list.innerHTML = editingMelari.map((m,i) => `
-       <div class="melario-item" id="melItem-${i}" style="flex-direction:column;align-items:stretch;gap:0.5rem">
+    <div class="melario-item" id="melItem-${i}" style="flex-direction:column;align-items:stretch;gap:0.5rem">
       <div style="display:flex;align-items:center;gap:0.6rem;flex-wrap:wrap">
         <span style="font-size:1.1rem">🍯</span>
         <span class="mel-info"><strong>${m.num} telaini</strong>${m.note?' — '+m.note:''}</span>
@@ -1306,8 +1330,6 @@ function saveMelEdit(i) {
   };
   renderModalMelari();
 }
-
-  
 
 function addMelario() {
   const num = document.getElementById('melNum').value;
@@ -1477,12 +1499,14 @@ function addLogEntry() {
   const data = document.getElementById('logData').value;
   const note = document.getElementById('logNote').value.trim();
   if(!data || !note) { alert('Compila almeno la data e le note'); return; }
+  const tipi = Array.from(document.querySelectorAll('#logTipo input:checked')).map(x => x.value);
+  if(tipi.length === 0) { alert('Seleziona almeno un tipo di intervento'); return; }
   const arniaId = document.getElementById('logArnia').value;
   const arniaObj = arnie.find(a => a.id === arniaId);
   const entry = {
     id: Date.now().toString(), data,
     arniaId, arniaNome: arniaObj ? `#${arniaObj.num}${arniaObj.nome?' – '+arniaObj.nome:''}` : 'Tutte',
-    tipo: document.getElementById('logTipo').value,
+    tipo: tipi,
     note,
     varroa: document.getElementById('logVarroa').value,
     miele: document.getElementById('logMiele').value
@@ -1492,6 +1516,7 @@ function addLogEntry() {
   document.getElementById('logNote').value = '';
   document.getElementById('logVarroa').value = '';
   document.getElementById('logMiele').value = '';
+  document.querySelectorAll('#logTipo input').forEach(x => x.checked = false);
   renderLog();
   renderStats();
 }
@@ -1508,8 +1533,9 @@ function renderLog() {
   const search = (document.getElementById('filterSearch')?.value||'').toLowerCase();
   const tipo = document.getElementById('filterTipo')?.value||'';
   const arniaF = document.getElementById('filterArnia')?.value||'';
+  const getTipi = (t) => Array.isArray(t) ? t : [t];
   let filtered = logBook.filter(e => {
-    if(tipo && e.tipo !== tipo) return false;
+    if(tipo && !getTipi(e.tipo).includes(tipo)) return false;
     if(arniaF && e.arniaId !== arniaF) return false;
     if(search && !e.note.toLowerCase().includes(search) && !e.arniaNome.toLowerCase().includes(search)) return false;
     return true;
@@ -1521,13 +1547,16 @@ function renderLog() {
     container.innerHTML = `<div class="empty-state"><span class="big">📖</span>Nessuna registrazione trovata.</div>`;
     return;
   }
-  container.innerHTML = filtered.map(e => `
-    <div class="log-entry tipo-${e.tipo}">
+  container.innerHTML = filtered.map(e => {
+    const tipi = Array.isArray(e.tipo) ? e.tipo : [e.tipo];
+    const firstTipo = tipi[0] || 'altro';
+    return `
+    <div class="log-entry tipo-${firstTipo}">
       <div class="log-entry-header">
         <div class="log-entry-meta">
           <span class="log-date">📅 ${formatDate(e.data)}</span>
           <span class="tag tag-arnia">🏠 ${e.arniaNome}</span>
-          <span class="tag tag-tipo ${e.tipo}">${tipoEmoji[e.tipo]||''} ${tipoLabel[e.tipo]||e.tipo}</span>
+          ${tipi.map(t => `<span class="tag tag-tipo ${t}">${tipoEmoji[t]||''} ${tipoLabel[t]||t}</span>`).join('')}
         </div>
         <div class="log-actions">
           <button class="btn-icon del" onclick="deleteLog('${e.id}')" title="Elimina">🗑</button>
@@ -1538,14 +1567,15 @@ function renderLog() {
         ${e.varroa ? `<span>🕷 Varroa: <strong>${e.varroa} cadute/giorno</strong></span>` : ''}
         ${e.miele ? `<span>🍯 Miele: <strong>${e.miele} kg</strong></span>` : ''}
       </div>` : ''}
-    </div>
-  `).join('');
+    </div>`;
+  }).join('');
 }
 
 function renderStats() {
+  const getTipi = (t) => Array.isArray(t) ? t : [t];
   const totalMiele = logBook.reduce((s,e)=>s+(parseFloat(e.miele)||0),0);
-  const totalTrattamenti = logBook.filter(e=>e.tipo==='trattamento').length;
-  const totalIspezioni = logBook.filter(e=>e.tipo==='ispezione').length;
+  const totalTrattamenti = logBook.filter(e=>getTipi(e.tipo).includes('trattamento')).length;
+  const totalIspezioni = logBook.filter(e=>getTipi(e.tipo).includes('ispezione')).length;
   document.getElementById('statsGrid').innerHTML = `
     <div class="stat-card"><div class="stat-number">${arnie.length}</div><div class="stat-label">Arnie registrate</div></div>
     <div class="stat-card"><div class="stat-number">${logBook.length}</div><div class="stat-label">Registrazioni totali</div></div>
