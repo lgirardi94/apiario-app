@@ -1236,15 +1236,78 @@ function renderModalMelari() {
   }
   const statusLabel = {posizionato:'In produzione', rimosso:'Rimosso', produzione:'Smielato'};
   list.innerHTML = editingMelari.map((m,i) => `
-    <div class="melario-item">
-      <span style="font-size:1.1rem">🍯</span>
-      <span class="mel-info"><strong>${m.num} telaini</strong>${m.note?' — '+m.note:''}</span>
-      <span class="mel-date">${m.data ? formatDate(m.data) : '—'}</span>
-      <span class="mel-status mel-${m.status}">${statusLabel[m.status]||m.status}</span>
-      <button class="btn-icon del" onclick="removeMelario(${i})" title="Rimuovi">✕</button>
+       <div class="melario-item" id="melItem-${i}" style="flex-direction:column;align-items:stretch;gap:0.5rem">
+      <div style="display:flex;align-items:center;gap:0.6rem;flex-wrap:wrap">
+        <span style="font-size:1.1rem">🍯</span>
+        <span class="mel-info"><strong>${m.num} telaini</strong>${m.note?' — '+m.note:''}</span>
+        <span class="mel-date">${m.data ? formatDate(m.data) : '—'}</span>
+        <span class="mel-status mel-${m.status}">${statusLabel[m.status]||m.status}</span>
+        <div style="margin-left:auto;display:flex;gap:0.3rem">
+          <button class="btn-icon" onclick="openMelEdit(${i})" title="Modifica">✏️</button>
+          <button class="btn-icon del" onclick="removeMelario(${i})" title="Rimuovi">✕</button>
+        </div>
+      </div>
+      <div id="melEditForm-${i}" style="display:none;background:white;border:1px solid var(--cream-dark);border-radius:4px;padding:0.8rem;margin-top:0.2rem">
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.6rem;margin-bottom:0.6rem">
+          <div>
+            <label style="display:block;font-size:0.78rem;font-weight:600;color:var(--text-light);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:0.2rem">N° telaini</label>
+            <input type="number" id="melEditNum-${i}" value="${m.num}" min="1" max="12" style="width:100%;padding:0.4rem 0.6rem;border:1px solid var(--cream-dark);border-radius:3px;font-family:'Crimson Pro',serif;font-size:0.95rem;background:var(--cream)">
+          </div>
+          <div>
+            <label style="display:block;font-size:0.78rem;font-weight:600;color:var(--text-light);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:0.2rem">Data</label>
+            <input type="date" id="melEditData-${i}" value="${m.data||''}" style="width:100%;padding:0.4rem 0.6rem;border:1px solid var(--cream-dark);border-radius:3px;font-family:'Crimson Pro',serif;font-size:0.95rem;background:var(--cream)">
+          </div>
+          <div>
+            <label style="display:block;font-size:0.78rem;font-weight:600;color:var(--text-light);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:0.2rem">Stato</label>
+            <select id="melEditStatus-${i}" style="width:100%;padding:0.4rem 0.6rem;border:1px solid var(--cream-dark);border-radius:3px;font-family:'Crimson Pro',serif;font-size:0.95rem;background:var(--cream)">
+              <option value="posizionato" ${m.status==='posizionato'?'selected':''}>In produzione</option>
+              <option value="rimosso" ${m.status==='rimosso'?'selected':''}>Rimosso</option>
+              <option value="produzione" ${m.status==='produzione'?'selected':''}>Smielato</option>
+            </select>
+          </div>
+        </div>
+        <div style="margin-bottom:0.6rem">
+          <label style="display:block;font-size:0.78rem;font-weight:600;color:var(--text-light);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:0.2rem">Note</label>
+          <input type="text" id="melEditNote-${i}" value="${m.note||''}" placeholder="Es. acacia, 8 telaini opercolati..." style="width:100%;padding:0.4rem 0.6rem;border:1px solid var(--cream-dark);border-radius:3px;font-family:'Crimson Pro',serif;font-size:0.95rem;background:var(--cream)">
+        </div>
+        <div style="display:flex;gap:0.5rem;justify-content:flex-end">
+          <button class="btn btn-secondary" style="padding:0.35rem 0.8rem;font-size:0.85rem" onclick="closeMelEdit(${i})">Annulla</button>
+          <button class="btn" style="padding:0.35rem 0.8rem;font-size:0.85rem" onclick="saveMelEdit(${i})">💾 Salva</button>
+        </div>
+      </div>
     </div>
   `).join('');
 }
+
+function openMelEdit(i) {
+  // Close any other open edit forms
+  editingMelari.forEach((_,j) => {
+    const f = document.getElementById(`melEditForm-${j}`);
+    if(f) f.style.display = 'none';
+  });
+  const form = document.getElementById(`melEditForm-${i}`);
+  if(form) form.style.display = 'block';
+}
+
+function closeMelEdit(i) {
+  const form = document.getElementById(`melEditForm-${i}`);
+  if(form) form.style.display = 'none';
+}
+
+function saveMelEdit(i) {
+  const num = document.getElementById(`melEditNum-${i}`).value;
+  if(!num) { alert('Inserisci il numero di telaini'); return; }
+  editingMelari[i] = {
+    ...editingMelari[i],
+    num,
+    data: document.getElementById(`melEditData-${i}`).value,
+    status: document.getElementById(`melEditStatus-${i}`).value,
+    note: document.getElementById(`melEditNote-${i}`).value.trim()
+  };
+  renderModalMelari();
+}
+
+  
 
 function addMelario() {
   const num = document.getElementById('melNum').value;
