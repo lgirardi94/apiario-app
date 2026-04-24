@@ -2470,7 +2470,12 @@ function initGoogleDrive() {
     }
   });
   const saved = localStorage.getItem('driveAccessToken');
-  if(saved) { driveAccessToken = saved; updateDriveUI(true); }
+      if(saved) {
+        driveAccessToken = saved;
+        updateDriveUI(true);
+        setDriveLoading(true, '🔄 Caricamento dati da Drive...');
+        driveLoad().finally(() => setDriveLoading(false));
+      }
 }
 
 function updateDriveUI(connected) {
