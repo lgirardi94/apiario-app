@@ -754,6 +754,107 @@
   .mov-note { color: var(--text-light); font-size: 0.88rem; }
   .mov-date { font-style: italic; color: var(--text-light); font-size: 0.85rem; white-space: nowrap; }
 
+  /* CONTABILITÀ */
+  .cont-kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+  .cont-kpi {
+    background: white;
+    border: 1px solid var(--cream-dark);
+    border-radius: 6px;
+    padding: 1.1rem 1rem;
+    text-align: center;
+    box-shadow: 0 2px 8px var(--shadow);
+  }
+  .cont-kpi-label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-light);
+    font-weight: 600;
+    margin-bottom: 0.3rem;
+  }
+  .cont-kpi-val {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.6rem;
+    line-height: 1.1;
+  }
+  .cont-kpi-val.entrata { color: var(--green); }
+  .cont-kpi-val.uscita { color: var(--red); }
+  .cont-kpi-val.saldo.pos { color: var(--green); }
+  .cont-kpi-val.saldo.neg { color: var(--red); }
+  .cont-kpi-val.neutro { color: var(--amber); }
+  .cont-kpi-sub { font-size: 0.8rem; color: var(--text-light); margin-top: 0.2rem; }
+
+  .cont-chart-wrap {
+    background: white;
+    border: 1px solid var(--cream-dark);
+    border-radius: 6px;
+    padding: 1.2rem;
+    box-shadow: 0 2px 8px var(--shadow);
+    margin-bottom: 1.2rem;
+  }
+  .cont-chart-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1rem;
+    color: var(--brown);
+    margin-bottom: 1rem;
+  }
+  .bar-chart { display: flex; flex-direction: column; gap: 0.5rem; }
+  .bar-row { display: flex; align-items: center; gap: 0.7rem; font-size: 0.85rem; }
+  .bar-label { min-width: 36px; color: var(--text-light); font-weight: 600; text-align: right; }
+  .bar-track { flex: 1; height: 22px; background: var(--cream-dark); border-radius: 3px; overflow: hidden; display: flex; }
+  .bar-fill-e { height: 100%; background: var(--green); border-radius: 3px 0 0 3px; transition: width 0.5s; }
+  .bar-fill-u { height: 100%; background: var(--red); border-radius: 0 3px 3px 0; transition: width 0.5s; }
+  .bar-vals { min-width: 120px; font-size: 0.78rem; color: var(--text-light); }
+
+  .cat-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.3rem 0.75rem;
+    border: 1px solid var(--cream-dark);
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.88rem;
+    background: white;
+    color: var(--text);
+    transition: all 0.15s;
+    user-select: none;
+    margin: 0.2rem;
+  }
+  .cat-chip:hover { border-color: var(--amber-light); background: var(--amber-pale); }
+  .cat-chip input[type="checkbox"] { display: none; }
+  .cat-chip:has(input:checked) { background: var(--amber); border-color: var(--amber); color: var(--dark); font-weight: 600; }
+
+  .mov-cont-item {
+    background: white;
+    border: 1px solid var(--cream-dark);
+    border-left: 4px solid var(--cream-dark);
+    border-radius: 3px;
+    padding: 0.7rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    font-size: 0.95rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.5rem;
+  }
+  .mov-cont-item.entrata { border-left-color: var(--green); }
+  .mov-cont-item.uscita { border-left-color: var(--red); }
+  .mov-cont-importo {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.2rem;
+    min-width: 80px;
+    text-align: right;
+    white-space: nowrap;
+  }
+  .mov-cont-importo.entrata { color: var(--green); }
+  .mov-cont-importo.uscita { color: var(--red); }
+
   /* Scrollbar */
   ::-webkit-scrollbar { width: 6px; }
   ::-webkit-scrollbar-track { background: var(--cream); }
@@ -773,6 +874,7 @@
   <button onclick="showSection('arnie')">🏠 Le Mie Arnie</button>
   <button onclick="showSection('registro')">📖 Registro Visite</button>
   <button onclick="showSection('magazzino')">📦 Magazzino</button>
+  <button onclick="showSection('contabilita')">💰 Contabilità</button>
 </nav>
 
 <!-- BACKUP BAR -->
@@ -1079,7 +1181,92 @@
     </div>
   </section>
 
+  <!-- ===== CONTABILITÀ ===== -->
+  <section class="section" id="contabilita">
+    <h2 class="section-title">Contabilità</h2>
+    <p class="section-subtitle">Entrate, uscite e bilancio dell'apiario</p>
+    <div class="mag-tabs">
+      <button class="mag-tab active" onclick="showContTab('riepilogo', this)">📊 Riepilogo</button>
+      <button class="mag-tab" onclick="showContTab('movimenti', this)">💸 Movimenti</button>
+    </div>
+    <!-- TAB RIEPILOGO -->
+    <div id="contTabRiepilogo">
+      <div id="contKpiGrid" class="cont-kpi-grid"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;margin-bottom:1.2rem">
+        <div class="cont-chart-wrap">
+          <div class="cont-chart-title">📅 Anno corrente — per mese</div>
+          <div class="bar-chart" id="chartMensile"></div>
+        </div>
+        <div class="cont-chart-wrap">
+          <div class="cont-chart-title">📆 Confronto annate</div>
+          <div class="bar-chart" id="chartAnnate"></div>
+        </div>
+      </div>
+      <div class="cont-chart-wrap">
+        <div class="cont-chart-title">🏷️ Ultime movimentazioni</div>
+        <div id="contUltime"></div>
+      </div>
+    </div>
+    <!-- TAB MOVIMENTI -->
+    <div id="contTabMovimenti" style="display:none">
+      <div style="display:flex;gap:0.8rem;margin-bottom:1.2rem;flex-wrap:wrap;align-items:center">
+        <button class="btn" onclick="openContMovModal()">+ Nuovo movimento</button>
+        <select id="contFiltroTipo" onchange="renderContMovimenti()" style="padding:0.45rem 0.8rem;border:1px solid var(--cream-dark);border-radius:3px;font-family:'Crimson Pro',serif;font-size:0.95rem;background:white;color:var(--text)">
+          <option value="">Tutti i tipi</option>
+          <option value="entrata">🟢 Entrate</option>
+          <option value="uscita">🔴 Uscite</option>
+        </select>
+        <select id="contFiltroAnno" onchange="renderContMovimenti()" style="padding:0.45rem 0.8rem;border:1px solid var(--cream-dark);border-radius:3px;font-family:'Crimson Pro',serif;font-size:0.95rem;background:white;color:var(--text)">
+          <option value="">Tutti gli anni</option>
+        </select>
+        <input type="text" id="contFiltroSearch" placeholder="🔍 Cerca..." oninput="renderContMovimenti()" style="padding:0.45rem 0.8rem;border:1px solid var(--cream-dark);border-radius:3px;font-family:'Crimson Pro',serif;font-size:0.95rem;background:white;flex:1;min-width:120px">
+      </div>
+      <div id="contMovList"></div>
+    </div>
+  </section>
+
 </main>
+
+<!-- MODAL MOVIMENTO CONTABILE -->
+<div class="modal-overlay" id="contMovModal">
+  <div class="modal" style="max-width:500px">
+    <h3 id="contMovModalTitle">💰 Nuovo movimento</h3>
+    <input type="hidden" id="editContMovId">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.8rem">
+      <div class="form-row">
+        <label>Data</label>
+        <input type="date" id="contMovData">
+      </div>
+      <div class="form-row">
+        <label>Tipo</label>
+        <select id="contMovTipo" onchange="renderCatChips()">
+          <option value="entrata">🟢 Entrata</option>
+          <option value="uscita">🔴 Uscita</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <label>Descrizione</label>
+      <input type="text" id="contMovDesc" placeholder="Es. Vendita 20 vasi acacia fiera...">
+    </div>
+    <div class="form-row">
+      <label>Importo (€)</label>
+      <input type="number" id="contMovImporto" min="0" step="0.01" placeholder="Es. 150.00">
+    </div>
+    <div class="form-row">
+      <label>Categorie <span style="font-weight:300;font-style:italic;text-transform:none">(anche più di una)</span></label>
+      <div id="contCatChips" style="display:flex;flex-wrap:wrap;padding:0.3rem 0"></div>
+    </div>
+    <div class="form-row">
+      <label>Note</label>
+      <input type="text" id="contMovNote" placeholder="Es. cliente, fornitore...">
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeContMovModal()">Annulla</button>
+      <button class="btn" onclick="saveContMov()">Salva</button>
+    </div>
+  </div>
+</div>
 
 <!-- MODAL ARTICOLO -->
 <div class="modal-overlay" id="articoloModal">
@@ -1327,16 +1514,6 @@ let arnie = JSON.parse(localStorage.getItem('arnie') || '[]');
 let logBook = JSON.parse(localStorage.getItem('logBook') || '[]');
 
 // ======= NAV =======
-function showSection(id) {
-  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-  event.target.classList.add('active');
-  if(id === 'registro') { updateArniSelects(); renderLog(); renderStats(); }
-  if(id === 'arnie') renderArnie();
-  if(id === 'magazzino') { renderMagArticoli(); updateMovArticoloSelect(); }
-}
-
 // ======= CALENDARIO =======
 function toggleCard(header) {
   header.classList.toggle('open');
@@ -1738,9 +1915,8 @@ function exportCSV() {
 // ======= EXPORT / IMPORT JSON =======
 function exportJSON() {
   const payload = {
-    version: 1,
-    exportedAt: new Date().toISOString(),
-    arnie, logBook, articoli, movimentazioni
+    version: 1, exportedAt: new Date().toISOString(),
+    arnie, logBook, articoli, movimentazioni, movimentiContabili
   };
   const blob = new Blob([JSON.stringify(payload, null, 2)], {type: 'application/json'});
   const a = document.createElement('a');
@@ -1762,21 +1938,20 @@ function importJSON(event) {
       const nLog = data.logBook.length;
       const nArt = (data.articoli||[]).length;
       const nMov = (data.movimentazioni||[]).length;
-      const msg = `Il file contiene:\n• ${nArnie} arnie\n• ${nLog} registrazioni\n• ${nArt} articoli magazzino\n• ${nMov} movimentazioni\n\nI dati attuali verranno sostituiti. Continuare?`;
+      const nCont = (data.movimentiContabili||[]).length;
+      const msg = `Il file contiene:\n• ${nArnie} arnie\n• ${nLog} registrazioni\n• ${nArt} articoli magazzino\n• ${nMov} movimentazioni magazzino\n• ${nCont} movimenti contabili\n\nI dati attuali verranno sostituiti. Continuare?`;
       if(!confirm(msg)) { event.target.value=''; return; }
-      arnie = data.arnie;
-      logBook = data.logBook;
-      articoli = data.articoli || [];
-      movimentazioni = data.movimentazioni || [];
+      arnie = data.arnie; logBook = data.logBook;
+      articoli = data.articoli||[]; movimentazioni = data.movimentazioni||[];
+      movimentiContabili = data.movimentiContabili||[];
       localStorage.setItem('arnie', JSON.stringify(arnie));
       localStorage.setItem('logBook', JSON.stringify(logBook));
       localStorage.setItem('articoli', JSON.stringify(articoli));
       localStorage.setItem('movimentazioni', JSON.stringify(movimentazioni));
+      localStorage.setItem('movimentiContabili', JSON.stringify(movimentiContabili));
       renderArnie(); updateArniSelects(); renderLog(); renderStats(); renderMagArticoli();
-      showImportToast(`✅ Importazione completata: ${nArnie} arnie, ${nLog} registrazioni, ${nArt} articoli.`);
-    } catch(err) {
-      alert('Errore nel file JSON: ' + err.message);
-    }
+      showImportToast(`✅ Importazione completata!`);
+    } catch(err) { alert('Errore nel file JSON: ' + err.message); }
     event.target.value = '';
   };
   reader.readAsText(file);
@@ -1793,6 +1968,243 @@ function showImportToast(msg) {
   toast.textContent = msg;
   toast.style.opacity = '1';
   setTimeout(() => { toast.style.opacity = '0'; }, 3500);
+}
+
+// ======= CONTABILITÀ STATE =======
+let movimentiContabili = JSON.parse(localStorage.getItem('movimentiContabili') || '[]');
+
+const CAT_ENTRATA = [
+  { id: 'vendita_miele',   label: '🍯 Vendita miele' },
+  { id: 'vendita_nuclei',  label: '🐝 Vendita nuclei/regine' },
+  { id: 'vendita_cera',    label: '🌿 Vendita cera/propoli' },
+  { id: 'contributi',      label: '📦 Contributi/premi' },
+  { id: 'altro_ricavo',    label: '💰 Altro ricavo' },
+];
+const CAT_USCITA = [
+  { id: 'farmaci',         label: '💊 Farmaci/trattamenti' },
+  { id: 'alimentazione',   label: '🍬 Alimentazione' },
+  { id: 'attrezzatura',    label: '🔧 Attrezzatura' },
+  { id: 'arnie',           label: '🏠 Arnie e accessori' },
+  { id: 'trasporti',       label: '🚗 Carburante/trasporti' },
+  { id: 'burocrazia',      label: '📋 Costi burocratici' },
+  { id: 'altro_costo',     label: '💡 Altro costo' },
+];
+
+function getCatList(tipo) { return tipo === 'entrata' ? CAT_ENTRATA : CAT_USCITA; }
+
+function fmt(n) { return parseFloat(n||0).toLocaleString('it-IT', {minimumFractionDigits:2, maximumFractionDigits:2}); }
+
+// ======= CONTABILITÀ NAV =======
+function showContTab(tab, btn) {
+  document.getElementById('contTabRiepilogo').style.display = tab === 'riepilogo' ? 'block' : 'none';
+  document.getElementById('contTabMovimenti').style.display = tab === 'movimenti' ? 'block' : 'none';
+  document.querySelectorAll('#contabilita .mag-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  if(tab === 'riepilogo') renderContRiepilogo();
+  if(tab === 'movimenti') { populateContAnnoFilter(); renderContMovimenti(); }
+}
+
+// ======= RIEPILOGO =======
+function renderContRiepilogo() {
+  const anno = new Date().getFullYear();
+  const mesi = ['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'];
+
+  // Totals all time
+  const totEntrate = movimentiContabili.filter(m=>m.tipo==='entrata').reduce((s,m)=>s+parseFloat(m.importo||0),0);
+  const totUscite = movimentiContabili.filter(m=>m.tipo==='uscita').reduce((s,m)=>s+parseFloat(m.importo||0),0);
+  const saldoTot = totEntrate - totUscite;
+
+  // Totals current year
+  const annoCurr = movimentiContabili.filter(m=>m.data&&m.data.startsWith(anno));
+  const entAnno = annoCurr.filter(m=>m.tipo==='entrata').reduce((s,m)=>s+parseFloat(m.importo||0),0);
+  const uscAnno = annoCurr.filter(m=>m.tipo==='uscita').reduce((s,m)=>s+parseFloat(m.importo||0),0);
+  const saldoAnno = entAnno - uscAnno;
+
+  // KPI
+  document.getElementById('contKpiGrid').innerHTML = `
+    <div class="cont-kpi"><div class="cont-kpi-label">Saldo ${anno}</div><div class="cont-kpi-val saldo ${saldoAnno>=0?'pos':'neg'}">${saldoAnno>=0?'+':''}€ ${fmt(saldoAnno)}</div></div>
+    <div class="cont-kpi"><div class="cont-kpi-label">Entrate ${anno}</div><div class="cont-kpi-val entrata">€ ${fmt(entAnno)}</div></div>
+    <div class="cont-kpi"><div class="cont-kpi-label">Uscite ${anno}</div><div class="cont-kpi-val uscita">€ ${fmt(uscAnno)}</div></div>
+    <div class="cont-kpi"><div class="cont-kpi-label">Saldo totale</div><div class="cont-kpi-val saldo ${saldoTot>=0?'pos':'neg'}">${saldoTot>=0?'+':''}€ ${fmt(saldoTot)}</div></div>
+    <div class="cont-kpi"><div class="cont-kpi-label">Entrate totali</div><div class="cont-kpi-val entrata">€ ${fmt(totEntrate)}</div></div>
+    <div class="cont-kpi"><div class="cont-kpi-label">Uscite totali</div><div class="cont-kpi-val uscita">€ ${fmt(totUscite)}</div></div>
+  `;
+
+  // Chart mensile anno corrente
+  const maxMens = Math.max(...Array.from({length:12},(_,i)=>{
+    const m = String(i+1).padStart(2,'0');
+    const prefix = `${anno}-${m}`;
+    const e = annoCurr.filter(x=>x.data.startsWith(prefix)&&x.tipo==='entrata').reduce((s,x)=>s+parseFloat(x.importo||0),0);
+    const u = annoCurr.filter(x=>x.data.startsWith(prefix)&&x.tipo==='uscita').reduce((s,x)=>s+parseFloat(x.importo||0),0);
+    return Math.max(e,u);
+  }), 1);
+
+  document.getElementById('chartMensile').innerHTML = Array.from({length:12},(_,i)=>{
+    const m = String(i+1).padStart(2,'0');
+    const prefix = `${anno}-${m}`;
+    const e = annoCurr.filter(x=>x.data.startsWith(prefix)&&x.tipo==='entrata').reduce((s,x)=>s+parseFloat(x.importo||0),0);
+    const u = annoCurr.filter(x=>x.data.startsWith(prefix)&&x.tipo==='uscita').reduce((s,x)=>s+parseFloat(x.importo||0),0);
+    const we = Math.round((e/maxMens)*100);
+    const wu = Math.round((u/maxMens)*100);
+    return `<div class="bar-row">
+      <span class="bar-label">${mesi[i]}</span>
+      <div style="flex:1;display:flex;flex-direction:column;gap:2px">
+        <div class="bar-track"><div class="bar-fill-e" style="width:${we}%"></div></div>
+        <div class="bar-track"><div class="bar-fill-u" style="width:${wu}%"></div></div>
+      </div>
+      <span class="bar-vals" style="text-align:right"><span style="color:var(--green)">+€${fmt(e)}</span><br><span style="color:var(--red)">-€${fmt(u)}</span></span>
+    </div>`;
+  }).join('');
+
+  // Chart annate
+  const anni = [...new Set(movimentiContabili.map(m=>m.data&&m.data.slice(0,4)).filter(Boolean))].sort();
+  const maxAnn = Math.max(...anni.map(a=>{
+    const e = movimentiContabili.filter(m=>m.data&&m.data.startsWith(a)&&m.tipo==='entrata').reduce((s,m)=>s+parseFloat(m.importo||0),0);
+    const u = movimentiContabili.filter(m=>m.data&&m.data.startsWith(a)&&m.tipo==='uscita').reduce((s,m)=>s+parseFloat(m.importo||0),0);
+    return Math.max(e,u);
+  }), 1);
+
+  document.getElementById('chartAnnate').innerHTML = anni.length === 0
+    ? '<div style="color:var(--text-light);font-style:italic;font-size:0.9rem">Nessun dato disponibile.</div>'
+    : anni.map(a=>{
+      const e = movimentiContabili.filter(m=>m.data&&m.data.startsWith(a)&&m.tipo==='entrata').reduce((s,m)=>s+parseFloat(m.importo||0),0);
+      const u = movimentiContabili.filter(m=>m.data&&m.data.startsWith(a)&&m.tipo==='uscita').reduce((s,m)=>s+parseFloat(m.importo||0),0);
+      const we = Math.round((e/maxAnn)*100);
+      const wu = Math.round((u/maxAnn)*100);
+      return `<div class="bar-row">
+        <span class="bar-label">${a}</span>
+        <div style="flex:1;display:flex;flex-direction:column;gap:2px">
+          <div class="bar-track"><div class="bar-fill-e" style="width:${we}%"></div></div>
+          <div class="bar-track"><div class="bar-fill-u" style="width:${wu}%"></div></div>
+        </div>
+        <span class="bar-vals" style="text-align:right"><span style="color:var(--green)">+€${fmt(e)}</span><br><span style="color:var(--red)">-€${fmt(u)}</span></span>
+      </div>`;
+    }).join('');
+
+  // Ultime 8
+  const ultime = [...movimentiContabili].sort((a,b)=>b.data.localeCompare(a.data)).slice(0,8);
+  document.getElementById('contUltime').innerHTML = ultime.length === 0
+    ? '<div style="color:var(--text-light);font-style:italic;font-size:0.9rem">Nessun movimento registrato.</div>'
+    : ultime.map(m=>`
+      <div class="mov-cont-item ${m.tipo}">
+        <span class="mov-date">${formatDate(m.data)}</span>
+        <span class="mov-cont-importo ${m.tipo}">${m.tipo==='entrata'?'+':'-'}€ ${fmt(m.importo)}</span>
+        <div style="flex:1"><div style="font-weight:600;color:var(--brown)">${m.descrizione||'—'}</div>
+        <div style="font-size:0.82rem;color:var(--text-light)">${(Array.isArray(m.categorie)?m.categorie:[]).map(c=>{
+          const all=[...CAT_ENTRATA,...CAT_USCITA]; const found=all.find(x=>x.id===c); return found?found.label:c;
+        }).join(', ')}</div></div>
+      </div>`).join('');
+}
+
+// ======= MOVIMENTI =======
+function populateContAnnoFilter() {
+  const anni = [...new Set(movimentiContabili.map(m=>m.data&&m.data.slice(0,4)).filter(Boolean))].sort().reverse();
+  const sel = document.getElementById('contFiltroAnno');
+  if(!sel) return;
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">Tutti gli anni</option>' + anni.map(a=>`<option value="${a}">${a}</option>`).join('');
+  if(cur) sel.value = cur;
+}
+
+function renderContMovimenti() {
+  const filtroTipo = document.getElementById('contFiltroTipo')?.value||'';
+  const filtroAnno = document.getElementById('contFiltroAnno')?.value||'';
+  const filtroSearch = (document.getElementById('contFiltroSearch')?.value||'').toLowerCase();
+  const all=[...CAT_ENTRATA,...CAT_USCITA];
+
+  let filtered = [...movimentiContabili]
+    .sort((a,b)=>b.data.localeCompare(a.data))
+    .filter(m=>{
+      if(filtroTipo && m.tipo!==filtroTipo) return false;
+      if(filtroAnno && !m.data.startsWith(filtroAnno)) return false;
+      if(filtroSearch && !(m.descrizione||'').toLowerCase().includes(filtroSearch) && !(m.note||'').toLowerCase().includes(filtroSearch)) return false;
+      return true;
+    });
+
+  const el = document.getElementById('contMovList');
+  if(!el) return;
+  if(filtered.length===0){ el.innerHTML='<div class="empty-state"><span class="big">💰</span>Nessun movimento trovato.</div>'; return; }
+
+  el.innerHTML = filtered.map(m=>{
+    const cats = (Array.isArray(m.categorie)?m.categorie:[]).map(c=>{const f=all.find(x=>x.id===c);return f?f.label:c;}).join(', ');
+    return `<div class="mov-cont-item ${m.tipo}">
+      <span class="mov-date">${formatDate(m.data)}</span>
+      <span class="mov-cont-importo ${m.tipo}">${m.tipo==='entrata'?'+':'-'}€ ${fmt(m.importo)}</span>
+      <div style="flex:1">
+        <div style="font-weight:600;color:var(--brown)">${m.descrizione||'—'}</div>
+        <div style="font-size:0.82rem;color:var(--text-light)">${cats}${m.note?' · '+m.note:''}</div>
+      </div>
+      <button class="btn-icon del" onclick="deleteContMov('${m.id}')" title="Elimina">🗑</button>
+    </div>`;
+  }).join('');
+}
+
+function deleteContMov(id) {
+  if(!confirm('Eliminare questo movimento?')) return;
+  movimentiContabili = movimentiContabili.filter(m=>m.id!==id);
+  saveContabilita();
+  renderContMovimenti();
+  renderContRiepilogo();
+}
+
+function saveContabilita() {
+  localStorage.setItem('movimentiContabili', JSON.stringify(movimentiContabili));
+}
+
+// ======= MODAL MOVIMENTO CONTABILE =======
+function renderCatChips() {
+  const tipo = document.getElementById('contMovTipo')?.value||'entrata';
+  const cats = getCatList(tipo);
+  document.getElementById('contCatChips').innerHTML = cats.map(c=>`
+    <label class="cat-chip"><input type="checkbox" value="${c.id}"> ${c.label}</label>
+  `).join('');
+}
+
+function openContMovModal() {
+  document.getElementById('contMovModalTitle').textContent = '💰 Nuovo movimento';
+  document.getElementById('editContMovId').value = '';
+  document.getElementById('contMovData').value = new Date().toISOString().slice(0,10);
+  document.getElementById('contMovTipo').value = 'entrata';
+  document.getElementById('contMovDesc').value = '';
+  document.getElementById('contMovImporto').value = '';
+  document.getElementById('contMovNote').value = '';
+  renderCatChips();
+  document.getElementById('contMovModal').classList.add('open');
+}
+
+function closeContMovModal() { document.getElementById('contMovModal').classList.remove('open'); }
+
+function saveContMov() {
+  const data = document.getElementById('contMovData').value;
+  const importo = document.getElementById('contMovImporto').value;
+  const descrizione = document.getElementById('contMovDesc').value.trim();
+  if(!data||!importo||!descrizione){ alert('Compila data, importo e descrizione'); return; }
+  const categorie = Array.from(document.querySelectorAll('#contCatChips input:checked')).map(x=>x.value);
+  const mov = {
+    id: Date.now().toString(), data,
+    tipo: document.getElementById('contMovTipo').value,
+    descrizione, importo: parseFloat(importo), categorie,
+    note: document.getElementById('contMovNote').value.trim()
+  };
+  movimentiContabili.unshift(mov);
+  saveContabilita();
+  closeContMovModal();
+  populateContAnnoFilter();
+  renderContMovimenti();
+  renderContRiepilogo();
+  showImportToast('✅ Movimento salvato!');
+}
+
+// ======= UPDATED showSection =======
+function showSection(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  event.target.classList.add('active');
+  if(id === 'registro') { updateArniSelects(); renderLog(); renderStats(); }
+  if(id === 'arnie') renderArnie();
+  if(id === 'magazzino') { renderMagArticoli(); updateMovArticoloSelect(); }
+  if(id === 'contabilita') { renderContRiepilogo(); populateContAnnoFilter(); }
 }
 
 // ======= MAGAZZINO STATE =======
@@ -2037,6 +2449,7 @@ const CLIENT_ID = '256459531928-rg44b3eo4a3hatfmuf4jevck631uir6o.apps.googleuser
 const SCOPES = 'https://www.googleapis.com/auth/drive.appdata';
 const FILENAME_DB = 'apiario_db.json';
 const FILENAME_MAG = 'apiario_magazzino.json';
+const FILENAME_CONT = 'apiario_contabilita.json';
 
 let driveAccessToken = null;
 let tokenClient = null;
@@ -2124,7 +2537,8 @@ async function driveSave() {
     const ts = new Date().toISOString();
     await Promise.all([
       driveWriteFile(FILENAME_DB, JSON.stringify({ version: 1, savedAt: ts, arnie, logBook }, null, 2)),
-      driveWriteFile(FILENAME_MAG, JSON.stringify({ version: 1, savedAt: ts, articoli, movimentazioni }, null, 2))
+      driveWriteFile(FILENAME_MAG, JSON.stringify({ version: 1, savedAt: ts, articoli, movimentazioni }, null, 2)),
+      driveWriteFile(FILENAME_CONT, JSON.stringify({ version: 1, savedAt: ts, movimentiContabili }, null, 2))
     ]);
     showImportToast('✅ Tutti i dati salvati su Google Drive!');
   } catch(e) {
@@ -2138,40 +2552,41 @@ async function driveLoad() {
   if(!driveAccessToken) { showImportToast('⚠️ Prima connettiti a Google Drive'); return; }
   setDriveLoading(true, '🔄 Caricamento da Drive...');
   try {
-    const [fileDb, fileMag] = await Promise.all([
+    const [fileDb, fileMag, fileCont] = await Promise.all([
       driveFindFile(FILENAME_DB),
-      driveFindFile(FILENAME_MAG)
+      driveFindFile(FILENAME_MAG),
+      driveFindFile(FILENAME_CONT)
     ]);
-
     if(fileDb) {
       const resp = await driveApiCall(`https://www.googleapis.com/drive/v3/files/${fileDb.id}?alt=media`);
       const data = await resp.json();
       if(data.arnie && data.logBook) {
-        arnie = data.arnie;
-        logBook = data.logBook;
+        arnie = data.arnie; logBook = data.logBook;
         localStorage.setItem('arnie', JSON.stringify(arnie));
         localStorage.setItem('logBook', JSON.stringify(logBook));
         renderArnie(); updateArniSelects(); renderLog(); renderStats();
       }
     }
-
     if(fileMag) {
       const resp = await driveApiCall(`https://www.googleapis.com/drive/v3/files/${fileMag.id}?alt=media`);
       const data = await resp.json();
       if(data.articoli && data.movimentazioni) {
-        articoli = data.articoli;
-        movimentazioni = data.movimentazioni;
+        articoli = data.articoli; movimentazioni = data.movimentazioni;
         localStorage.setItem('articoli', JSON.stringify(articoli));
         localStorage.setItem('movimentazioni', JSON.stringify(movimentazioni));
         renderMagArticoli();
       }
     }
-
-    if(!fileDb && !fileMag) { showImportToast('ℹ️ Nessun file trovato su Drive. Salva prima i dati.'); }
-    else {
-      const ts = fileDb ? new Date(JSON.parse(await (await driveApiCall(`https://www.googleapis.com/drive/v3/files/${fileDb.id}?fields=modifiedTime`)).json().then ? '{}' : '{}').modifiedTime || Date.now()) : new Date();
-      showImportToast(`✅ Dati caricati da Drive!`);
+    if(fileCont) {
+      const resp = await driveApiCall(`https://www.googleapis.com/drive/v3/files/${fileCont.id}?alt=media`);
+      const data = await resp.json();
+      if(data.movimentiContabili) {
+        movimentiContabili = data.movimentiContabili;
+        localStorage.setItem('movimentiContabili', JSON.stringify(movimentiContabili));
+      }
     }
+    if(!fileDb && !fileMag && !fileCont) { showImportToast('ℹ️ Nessun file trovato su Drive. Salva prima i dati.'); }
+    else { showImportToast('✅ Dati caricati da Drive!'); }
   } catch(e) {
     if(e.message !== 'Unauthorized') showImportToast('❌ Errore caricamento: ' + e.message);
   } finally {
@@ -2198,6 +2613,7 @@ document.addEventListener('DOMContentLoaded', () => {
   renderStats();
   updateArniSelects();
   renderMagArticoli();
+  renderContRiepilogo();
 });
 
 window.addEventListener('load', () => { setTimeout(initGoogleDrive, 500); });
