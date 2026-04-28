@@ -2520,6 +2520,8 @@ function sciSetMode(m) {
   sciMode = m;
   document.getElementById('sci-btn-1to1').classList.toggle('on', m === '1to1');
   document.getElementById('sci-btn-2to1').classList.toggle('on', m === '2to1');
+  const card = document.getElementById('sciCalcCard');
+  if(card) { card.className = 'sci-calc-card ' + (m === '1to1' ? 'mode-1to1' : 'mode-2to1'); }
   sciCalc();
 }
 
