@@ -2166,9 +2166,10 @@ function showObTab(tab, btn) {
   document.getElementById(`obTab${tab.charAt(0).toUpperCase()+tab.slice(1)}`).style.display = 'block';
   btn.classList.add('active');
   populateAnnoSelects();
+  if(tab === 'storico')    renderObStorico();
   if(tab === 'stagionali') renderObStagionali();
   if(tab === 'annuali')    renderObAnnuali();
-  if(tab === 'storico')    renderObStorico();
+ 
 }
 
 // ======= RENDER STAGIONALI =======
