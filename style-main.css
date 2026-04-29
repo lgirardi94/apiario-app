@@ -850,19 +850,19 @@ main {
   line-height: 1.4;
 }
 .sci-type-btn.on-1to1 {
-  background: var(--amber-pale);
+  background: var(--amber);
   border: 2.5px solid var(--amber);
-  box-shadow: 0 3px 12px rgba(200,134,10,0.25);
+  box-shadow: 0 3px 12px rgba(200,134,10,0.4);
 }
-.sci-type-btn.on-1to1 strong { color: var(--brown); }
-.sci-type-btn.on-1to1 small  { color: var(--brown-light); }
+.sci-type-btn.on-1to1 strong { color: var(--dark); font-size: 1.8rem; }
+.sci-type-btn.on-1to1 small  { color: var(--dark-mid); }
 .sci-type-btn.on-2to1 {
-  background: #e6f1fb;
+  background: var(--blue);
   border: 2.5px solid var(--blue);
-  box-shadow: 0 3px 12px rgba(44,95,138,0.2);
+  box-shadow: 0 3px 12px rgba(44,95,138,0.35);
 }
-.sci-type-btn.on-2to1 strong { color: var(--blue); }
-.sci-type-btn.on-2to1 small  { color: var(--blue); opacity: 0.8; }
+.sci-type-btn.on-2to1 strong { color: white; font-size: 1.8rem; }
+.sci-type-btn.on-2to1 small  { color: rgba(255,255,255,0.85); }
 
 .sci-calc-card {
   background: white;
